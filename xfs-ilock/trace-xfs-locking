@@ -1,0 +1,19 @@
+#!/bin/bash
+
+perf probe --del='*'
+
+perf probe -m xfs --add='xfs:xfs_ilock_ret=xfs_ilock%return'
+perf probe -m xfs --add='xfs:xfs_ilock_nowait_ret=xfs_ilock_nowait%return ret=$retval'
+
+perf record \
+     -e xfs:xfs_ilock \
+     -e xfs:xfs_ilock_nowait \
+     -e xfs:xfs_ilock_demote \
+     -e xfs:xfs_iunlock \
+     -e xfs:xfs_ilock_ret \
+     -e xfs:xfs_ilock_nowait_ret \
+     -e syscalls:sys_enter_io_submit \
+     -e syscalls:sys_exit_io_submit \
+     -e sched:sched_switch \
+     --call-graph=fp \
+     -a
